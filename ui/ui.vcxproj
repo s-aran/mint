@@ -153,11 +153,13 @@
   <ItemGroup>
     <ClInclude Include="classex.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="mdi_child.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="window.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="classex.cpp" />
+    <ClCompile Include="mdi_child.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

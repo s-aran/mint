@@ -8,6 +8,19 @@ WindowClassEx::WindowClassEx()
 
   // this->m_lpError = new CrunError();
   this->m_lpwcxWindowClassEx = this->createWindowClassEx();
+
+  // default values`
+  this->setStyle(CS_HREDRAW | CS_VREDRAW);
+  this->setWindowProcedure(NULL);
+  this->setClassExtra(0);
+  this->setWindowExtra(0);
+  this->setInstance(NULL);
+  this->setIcon(LoadIcon(NULL, IDI_APPLICATION));
+  this->setCursor(LoadCursor(NULL, IDC_ARROW));
+  this->setBackground((HBRUSH)GetStockObject(WHITE_BRUSH));
+  this->setMenuName(NULL);
+  this->setClassName(NULL);
+  this->setSmallIcon(LoadIcon(NULL, IDI_APPLICATION));
 }
 
 WindowClassEx::WindowClassEx(const WindowClassEx& v) noexcept

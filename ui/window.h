@@ -59,7 +59,6 @@ protected:
 
   // CrunError* GetError();
 
-private:
   LPCTSTR m_lpszClassName;
 
   WindowClassEx windowClassEx_;
@@ -76,4 +75,7 @@ private:
   int m_nY;
   int m_nWidth;
   int m_nHeight;
+
+
+private:
 };

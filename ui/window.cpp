@@ -8,7 +8,7 @@ Window::DialogWindowHandlerVector Window::g_vectorDialogWindows;
 Window::Window(LPCTSTR lpszClassName) :
   m_lpszClassName(lpszClassName),
   m_lpCreateStruct(NULL), m_hWnd(NULL), m_lpszText(NULL),
-  m_nX(CW_USEDEFAULT), m_nY(CW_USEDEFAULT), m_nWidth(480), m_nHeight(320)
+  m_nX(CW_USEDEFAULT), m_nY(CW_USEDEFAULT), m_nWidth(CW_USEDEFAULT), m_nHeight(CW_USEDEFAULT)
 {
   auto a = this->createWindowClassEx();
   this->windowClassEx_ = a;
@@ -17,12 +17,12 @@ Window::Window(LPCTSTR lpszClassName) :
 Window::Window(LPCTSTR lpszClassName, WindowClassEx& windowClassEx) :
   m_lpszClassName(lpszClassName),
   m_lpCreateStruct(NULL), m_hWnd(NULL), m_lpszText(NULL),
-  m_nX(CW_USEDEFAULT), m_nY(CW_USEDEFAULT), m_nWidth(480), m_nHeight(320)
+  m_nX(CW_USEDEFAULT), m_nY(CW_USEDEFAULT), m_nWidth(CW_USEDEFAULT), m_nHeight(CW_USEDEFAULT)
 {
   // g_lpDebug->Info("Called Window constructor!!");
-  this->windowClassEx_ = this->createWindowClassEx();
+  this->windowClassEx_ = windowClassEx;
+  this->windowClassEx_.setClassName(this->m_lpszClassName);
   // this->m_lpError = new CrunError();
-
 }
 
 Window::~Window()
@@ -41,9 +41,7 @@ Window::~Window()
 HWND Window::create(WNDPROC lpfncWndProc)
 {
   HINSTANCE hInstance = GetModuleHandle(0);
-  HWND hResult = this->create(hInstance, lpfncWndProc, NULL);
-
-  return hResult;
+  return this->create(hInstance, lpfncWndProc, NULL);
 }
 
 HWND Window::create(HINSTANCE hInstance, WNDPROC lpfnWndProc, LPVOID lpData)
@@ -59,7 +57,8 @@ HWND Window::create(HINSTANCE hInstance, WNDPROC lpfnWndProc, LPVOID lpData)
     this->m_lpszClassName,
     TEXT(""),
     // Caption bar with close button
-    WS_CAPTION | WS_SYSMENU,
+    // WS_CAPTION | WS_SYSMENU,
+    WS_OVERLAPPEDWINDOW,
     this->getX(),
     this->getY(),
     this->getWidth(),
@@ -72,6 +71,7 @@ HWND Window::create(HINSTANCE hInstance, WNDPROC lpfnWndProc, LPVOID lpData)
 
   if (!hWnd)
   {
+    std::wcout << std::wstring(getErrorMessage()) << std::endl;
     // this->m_lpError->SetWindowsError();
 
     // g_lpDebug->Error("CreateWindowEx() is Failure. return = 0x%08X, ErrorCode=0x%08X", hWnd, GetLastError());
@@ -83,7 +83,7 @@ HWND Window::create(HINSTANCE hInstance, WNDPROC lpfnWndProc, LPVOID lpData)
   }
 
   this->m_hWnd = hWnd;
-  this->setClientSize(480, 320);
+  // this->setClientSize(480, 320);
 
 #ifdef _WIN64
   SetWindowLong(hWnd, GWLP_USERDATA, (LONG)lpData);
@@ -121,18 +121,7 @@ WPARAM Window::MainLoop()
 WindowClassEx Window::createWindowClassEx()
 {
   WindowClassEx lpWindowClassEx;
-
-  lpWindowClassEx.setStyle(CS_HREDRAW | CS_VREDRAW);
-  lpWindowClassEx.setWindowProcedure(NULL);
-  lpWindowClassEx.setClassExtra(0);
-  lpWindowClassEx.setWindowExtra(0);
-  lpWindowClassEx.setInstance(NULL);
-  lpWindowClassEx.setIcon(LoadIcon(NULL, IDI_APPLICATION));
-  lpWindowClassEx.setCursor(LoadCursor(NULL, IDC_ARROW));
-  lpWindowClassEx.setBackground((HBRUSH)GetStockObject(WHITE_BRUSH));
-  lpWindowClassEx.setMenuName(NULL);
   lpWindowClassEx.setClassName(this->m_lpszClassName);
-  lpWindowClassEx.setSmallIcon(LoadIcon(NULL, IDI_APPLICATION));
 
   // g_lpDebug->WriteHex(lpWindowClassEx->GetWindowClassEx(), lpWindowClassEx->GetSize());
 
@@ -209,9 +198,9 @@ BOOL Window::setX(int nX)
   BOOL bResult = FALSE;
   this->m_nX = nX;
 
-  if (this->getHandle())
+  if (this->m_hWnd)
   {
-    bResult = SetWindowPos(this->getHandle(), 0, this->getX(), this->getY(), 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+    bResult = SetWindowPos(this->m_hWnd, 0, this->getX(), this->getY(), 0, 0, SWP_NOSIZE | SWP_NOZORDER);
   }
 
   return bResult;
@@ -222,9 +211,9 @@ BOOL Window::setY(int nY)
   BOOL bResult = FALSE;
   this->m_nY = nY;
 
-  if (this->getHandle())
+  if (this->m_hWnd)
   {
-    bResult = SetWindowPos(this->getHandle(), 0, this->getX(), this->getY(), 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+    bResult = SetWindowPos(this->m_hWnd, 0, this->getX(), this->getY(), 0, 0, SWP_NOSIZE | SWP_NOZORDER);
   }
 
   return bResult;
@@ -236,9 +225,9 @@ BOOL Window::setPosition(int nX, int nY)
   this->m_nX = nX;
   this->m_nY = nY;
 
-  if (this->getHandle())
+  if (this->m_hWnd)
   {
-    bResult = SetWindowPos(this->getHandle(), 0, this->getX(), this->getY(), 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+    bResult = SetWindowPos(this->m_hWnd, 0, this->getX(), this->getY(), 0, 0, SWP_NOSIZE | SWP_NOZORDER);
   }
 
   return bResult;
@@ -249,9 +238,9 @@ BOOL Window::setWidth(int nWidth)
   BOOL bResult = FALSE;
   this->m_nWidth = nWidth;
 
-  if (this->getHandle())
+  if (this->m_hWnd)
   {
-    bResult = SetWindowPos(this->getHandle(), 0, 0, 0, this->getWidth(), this->getHeight(), SWP_NOMOVE | SWP_NOZORDER);
+    bResult = SetWindowPos(this->m_hWnd, 0, 0, 0, this->getWidth(), this->getHeight(), SWP_NOMOVE | SWP_NOZORDER);
   }
 
   return bResult;
@@ -262,9 +251,9 @@ BOOL Window::setHeight(int nHeight)
   BOOL bResult = FALSE;
   this->m_nHeight = nHeight;
 
-  if (this->getHandle())
+  if (this->m_hWnd)
   {
-    bResult = SetWindowPos(this->getHandle(), 0, 0, 0, this->getWidth(), this->getHeight(), SWP_NOMOVE | SWP_NOZORDER);
+    bResult = SetWindowPos(this->m_hWnd, 0, 0, 0, this->getWidth(), this->getHeight(), SWP_NOMOVE | SWP_NOZORDER);
   }
 
   return bResult;
@@ -277,9 +266,9 @@ BOOL Window::setSize(int nWidth, int nHeight)
   this->m_nWidth = nWidth;
   this->m_nHeight = nHeight;
 
-  if (this->getHandle())
+  if (this->m_hWnd)
   {
-    bResult = SetWindowPos(this->getHandle(), 0, 0, 0, this->getWidth(), this->getHeight(), SWP_NOMOVE | SWP_NOZORDER);
+    bResult = SetWindowPos(this->m_hWnd, 0, 0, 0, this->getWidth(), this->getHeight(), SWP_NOMOVE | SWP_NOZORDER);
   }
 
   return bResult;
@@ -294,12 +283,12 @@ BOOL Window::setText(LPCTSTR lpszText)
   lstrcpy(this->m_lpszText, lpszText);
   // g_lpDebug->Info("m_lpszText = %s (0x%p)", this->GetText(), this->GetText());
 
-  if (!this->getHandle())
+  if (!this->m_hWnd)
   {
     return FALSE;
   }
 
-  bResult = SetWindowText(this->getHandle(), this->m_lpszText);
+  bResult = SetWindowText(this->m_hWnd, this->m_lpszText);
 
   if (bResult == FALSE)
   {
@@ -340,9 +329,9 @@ void Window::deleteCreateStruct()
 
 void Window::show()
 {
-  HWND hWnd = this->getHandle();
+  HWND hWnd = this->m_hWnd;
 
-  if (IsWindow(this->getHandle()))
+  if (IsWindow(this->m_hWnd))
   {
     PostMessage(hWnd, WM_SHOWWINDOW, NULL, NULL);
     ShowWindow(hWnd, SW_SHOW);
@@ -352,7 +341,7 @@ void Window::show()
 
 void Window::close()
 {
-  LRESULT lResult = SendMessage(this->getHandle(), WM_CLOSE, NULL, NULL);
+  LRESULT lResult = SendMessage(this->m_hWnd, WM_CLOSE, NULL, NULL);
 }
 
 BOOL Window::setClientSize(int nClientWidth, int nClientHeight)
@@ -360,8 +349,8 @@ BOOL Window::setClientSize(int nClientWidth, int nClientHeight)
   RECT rcClient = { NULL };
   RECT rcWindow = { NULL };
 
-  GetClientRect(this->getHandle(), &rcClient);
-  GetWindowRect(this->getHandle(), &rcWindow);
+  GetClientRect(this->m_hWnd, &rcClient);
+  GetWindowRect(this->m_hWnd, &rcWindow);
 
   int nWindowWidth = ((rcWindow.right - rcWindow.left) << 1) >> 1;
   int nWindowHeight = ((rcWindow.bottom - rcWindow.top) << 1) >> 1;

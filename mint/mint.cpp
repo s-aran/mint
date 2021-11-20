@@ -7,7 +7,8 @@
 #include "header.h"
 
 
-HINSTANCE hInstance;
+Window* mainWindow = NULL;
+ChildWindow* cw = NULL;
 
 LRESULT CALLBACK FrameWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -23,22 +24,18 @@ LRESULT CALLBACK FrameWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
     PostQuitMessage(0);
     return 0;
   case WM_CREATE:
+    // fnui();
+
     ccsClient.hWindowMenu = NULL;
     ccsClient.idFirstChild = 1000;
-    hClientWindow = CreateWindow(TEXT("Hoge"), NULL, WS_CHILD | WS_CLIPCHILDREN | WS_VISIBLE, 0, 0, 0, 0, hWnd, (HMENU)1, hInstance, &ccsClient);
+    hClientWindow = CreateWindow(TEXT("MDICLIENT"), NULL, WS_CHILD | WS_CLIPCHILDREN | WS_VISIBLE, 0, 0, 0, 0, hWnd, (HMENU)1, GetModuleHandle(0), &ccsClient);
+
+    // CreateMDIWindow(TEXT("MDICHILD"), TEXT("Piyo"), 0, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, hClientWindow, hInstance, 0);
+    HWND hChild = cw->create(hClientWindow, DefMDIChildProc);
+    cw->setSize(320, 240);
     return 0;
   }
   return DefFrameProc(hWnd, hClientWindow, uMsg, wParam, lParam);
-}
-
-LPCWSTR GetWindowsErrorMessage()
-{
-  return getErrorMessage();
-}
-
-LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
-{
-  return DefWindowProc(hWnd, iMsg, wParam, lParam);
 }
 
 int main()
@@ -46,58 +43,23 @@ int main()
   setlocale(LC_CTYPE, "");
   std::cout << "Hello World!\n";
 
-  fnui();
-  Window* w = new Window(TEXT("AAAA"));
-  w->create(MainWndProc);
-  w->show();
-  w->MainLoop();
-  delete w;
+  WindowClassEx windowClass;
+  windowClass.setBackground((HBRUSH)(COLOR_APPWORKSPACE + 1));
+  mainWindow = new Window(TEXT("AAAA"), windowClass);
 
-  MSG uMsg;
-  WNDCLASSEX wndClass;
+  WindowClassEx childClass = windowClass;
+  childClass.setBackground((HBRUSH)GetStockObject(WHITE_BRUSH));
+  cw = new ChildWindow(TEXT("MDICHILD"), childClass);
 
-  HINSTANCE hInstance = GetModuleHandle(0);
+  mainWindow->create(FrameWndProc);
+  mainWindow->show();
 
-  wndClass.cbSize = sizeof(wndClass);
-  wndClass.style = CS_HREDRAW | CS_VREDRAW;
-  wndClass.lpfnWndProc = FrameWndProc;
-  wndClass.cbClsExtra = wndClass.cbWndExtra = 0;
-  wndClass.hInstance = hInstance;
-  wndClass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-  wndClass.hCursor = LoadCursor(NULL, IDC_ARROW);
-  wndClass.hbrBackground = (HBRUSH)(COLOR_APPWORKSPACE + 1);
-  wndClass.lpszMenuName = NULL;
-  wndClass.lpszClassName = TEXT("MINTMINT");
-  wndClass.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
+  mainWindow->MainLoop();
 
-  if (!RegisterClassEx(&wndClass))
-  {
-    printf("RegisterClassEx failed\n");
-    wprintf(L"%ls", GetWindowsErrorMessage());
-    return 1;
-  }
+  delete cw;
+  delete mainWindow;
 
-  HWND hWnd = CreateWindowEx(
-    0,
-    TEXT("MINTMINT"),
-    TEXT("mint"),
-    WS_OVERLAPPEDWINDOW | WS_VISIBLE,
-    CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, NULL, NULL, hInstance, NULL);
-
-  if (!hWnd)
-  {
-    printf("CreateWindowEx failed\n");
-    wprintf(L"%ls", GetWindowsErrorMessage());
-    return 1;
-  }
-
-  while (GetMessage(&uMsg, NULL, 0, 0))
-  {
-    TranslateMessage(&uMsg);
-    DispatchMessage(&uMsg);
-  }
-
-  return uMsg.wParam;
+  return 0;
 }
 
 

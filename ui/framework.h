@@ -7,6 +7,7 @@
 
 #include "classex.h"
 #include "window.h"
+#include "mdi_child.h"
 
 #pragma comment(lib, "ui")
 
