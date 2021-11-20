@@ -30,3 +30,11 @@
 *.exe
 *.out
 *.app
+
+**/x86/*
+**/x64/*
+
+.vs/*
+*.vcxproj.user
+*.vcxproj.filters
+
