@@ -31,35 +31,27 @@ LRESULT CALLBACK FrameWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
   return DefFrameProc(hWnd, hClientWindow, uMsg, wParam, lParam);
 }
 
-static const int knMaxSize = 1024;
-WCHAR m_lpszWindowsErrorMessage[knMaxSize] = { 0 };
-
 LPCWSTR GetWindowsErrorMessage()
 {
-  LPVOID lpMessageBuffer;
+  return getErrorMessage();
+}
 
-  FormatMessage(
-      FORMAT_MESSAGE_ALLOCATE_BUFFER |
-      FORMAT_MESSAGE_FROM_SYSTEM,
-      NULL,
-      GetLastError(),
-      MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-      (LPWSTR)&lpMessageBuffer,
-      0,
-      NULL
-  );
-
-  lstrcpyW(m_lpszWindowsErrorMessage, (LPCWSTR)lpMessageBuffer);
-
-  LocalFree(lpMessageBuffer);
-
-  return (LPCWSTR)m_lpszWindowsErrorMessage;
+LRESULT CALLBACK MainWndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
+{
+  return DefWindowProc(hWnd, iMsg, wParam, lParam);
 }
 
 int main()
 {
   setlocale(LC_CTYPE, "");
   std::cout << "Hello World!\n";
+
+  fnui();
+  Window* w = new Window(TEXT("AAAA"));
+  w->create(MainWndProc);
+  w->show();
+  w->MainLoop();
+  delete w;
 
   MSG uMsg;
   WNDCLASSEX wndClass;
