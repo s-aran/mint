@@ -2,80 +2,103 @@
 
 #include "framework.h"
 
-class Window
+namespace Ui
 {
-public:
-  Window(LPCTSTR lpszClassName);
-  Window(LPCTSTR lpszClassName, WindowClassEx& windowClassEx);
-  virtual ~Window();
+  class Window
+  {
+  public:
+    using Callback = std::function<LRESULT(HWND, UINT, WPARAM, LPARAM)>;
+    struct MessageCallback : public CallbackBase<Callback>
+    {
+      virtual LRESULT CALLBACK Procedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-  HWND create(WNDPROC lpfncWndProc);
-  HWND create(HINSTANCE hInstance, WNDPROC lpfnWndProc, LPVOID lpData);
+      static LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+    };
 
-  WPARAM MainLoop();
+  public:
+    Window(LPCTSTR lpszClassName);
+    Window(LPCTSTR lpszClassName, WindowClassEx& windowClassEx);
+    virtual ~Window();
 
-  HWND getHandle() const;
+    HWND create(WNDPROC lpfncWndProc);
+    HWND create(HINSTANCE hInstance, WNDPROC lpfnWndProc, LPVOID lpData);
 
-  BOOL setWidth(int nWidth);
-  BOOL setHeight(int nHeight);
-  BOOL setSize(int nWidth, int nHeight);
+    WPARAM MainLoop();
 
-  int getHeight() const;
-  int getWidth() const;
+    HWND getHandle() const;
 
-  BOOL setX(int nX);
-  BOOL setY(int nY);
-  BOOL setPosition(int nX, int nY);
+    BOOL setWidth(int nWidth);
+    BOOL setHeight(int nHeight);
+    BOOL setSize(int nWidth, int nHeight);
 
-  int getX() const;
-  int getY() const;
+    int getHeight() const;
+    int getWidth() const;
 
-  BOOL setText(LPCTSTR lpszText);
-  LPCTSTR getText() const;
+    BOOL setX(int nX);
+    BOOL setY(int nY);
+    BOOL setPosition(int nX, int nY);
 
-  void setStyle(DWORD dwStyle);
-  DWORD getStyle() const;
+    int getX() const;
+    int getY() const;
 
-  void setExStyle(DWORD dwExStyle);
-  DWORD getExStyle() const;
+    BOOL setText(LPCTSTR lpszText);
+    LPCTSTR getText() const;
 
-  void show();
-  void close();
+    void setStyle(DWORD dwStyle);
+    DWORD getStyle() const;
 
-  static HINSTANCE getInstance(HWND hWnd);
+    void setExStyle(DWORD dwExStyle);
+    DWORD getExStyle() const;
 
-protected:
-  typedef std::vector<HWND> DialogWindowHandlerVector;
+    void show();
+    void close();
 
-  static DialogWindowHandlerVector g_vectorDialogWindows;
+    void setData(void* lpData);
+    void* getData() const;
 
-  WindowClassEx createWindowClassEx();
-  void registerWindowClassEx(WindowClassEx& classEx);
-  // void setHandle(HWND hWnd);
-  LPCREATESTRUCT createCreateStruct(LPVOID lpCreateParam);
-  void deleteCreateStruct();
+    // MessageCallback getMessageCallback();
 
-  BOOL setClientSize(int nClientWidth, int nClientHeight);
+    static HINSTANCE getInstance(HWND hWnd);
 
-  // CrunError* GetError();
+  protected:
+    typedef std::vector<HWND> DialogWindowHandlerVector;
 
-  LPCTSTR m_lpszClassName;
+    static DialogWindowHandlerVector g_vectorDialogWindows;
 
-  WindowClassEx windowClassEx_;
-  // CrunError* m_lpError;
+    WindowClassEx createWindowClassEx();
+    void registerWindowClassEx(WindowClassEx& classEx);
+    // void setHandle(HWND hWnd);
+    LPCREATESTRUCT createCreateStruct(LPVOID lpCreateParam);
+    void deleteCreateStruct();
 
-  LPCREATESTRUCT m_lpCreateStruct;
+    BOOL setClientSize(int nClientWidth, int nClientHeight);
 
-  HWND m_hWnd;
+    void setUserData();
+    static Window* getUserData(HWND hWnd);
 
-  LPTSTR m_lpszText;
-  DWORD m_dwStyle;
-  DWORD m_dwExStyle;
-  int m_nX;
-  int m_nY;
-  int m_nWidth;
-  int m_nHeight;
+    // CrunError* GetError();
 
+    LPCTSTR m_lpszClassName;
 
-private:
-};
+    WindowClassEx windowClassEx_;
+    MessageCallback messageCallback_;
+
+    // CrunError* m_lpError;
+
+    LPCREATESTRUCT m_lpCreateStruct;
+
+    HWND m_hWnd;
+
+    LPTSTR m_lpszText;
+    DWORD m_dwStyle;
+    DWORD m_dwExStyle;
+    int m_nX;
+    int m_nY;
+    int m_nWidth;
+    int m_nHeight;
+    void* m_lpData;
+
+  private:
+  };
+
+}

@@ -6,9 +6,9 @@
 
 #include "header.h"
 
-
-Window* mainWindow = NULL;
-ChildWindow* cw = NULL;
+// Ui::Window* mainWindow = NULL;
+Ui::ParentWindow* mainWindow = NULL;
+Ui::ChildWindow* cw = NULL;
 
 LRESULT CALLBACK FrameWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -35,23 +35,32 @@ LRESULT CALLBACK FrameWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
     cw->setSize(320, 240);
     return 0;
   }
+
   return DefFrameProc(hWnd, hClientWindow, uMsg, wParam, lParam);
 }
 
 int main()
 {
+  using namespace Ui;
+
   setlocale(LC_CTYPE, "");
   std::cout << "Hello World!\n";
 
   WindowClassEx windowClass;
   windowClass.setBackground((HBRUSH)(COLOR_APPWORKSPACE + 1));
+
+  /*
   mainWindow = new Window(TEXT("AAAA"), windowClass);
+  */
+  mainWindow = new ParentWindow(TEXT("AAAA"), windowClass);
+  
 
   WindowClassEx childClass = windowClass;
   childClass.setBackground((HBRUSH)GetStockObject(WHITE_BRUSH));
   cw = new ChildWindow(TEXT("MDICHILD"), childClass);
 
-  mainWindow->create(FrameWndProc);
+
+  mainWindow->create();
   mainWindow->show();
 
   mainWindow->MainLoop();
