@@ -8,7 +8,9 @@
 #include <Windows.h>
 
 #include "logger.h"
+#include "string_converter.h"
+#include "windows.h"
 
 #pragma comment(lib, "utils")
 
-LPCTSTR getErrorMessage();
+
