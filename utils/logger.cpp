@@ -54,6 +54,11 @@ namespace Utils
     VARIABLEARGS_LOGGER("FATAL");
   }
 
+  void Logger::info(LPCTSTR message, ...) const
+  {
+    VARIABLEARGS_LOGGER("INFO");
+  }
+
   void Logger::writeRaw(const std::string message, ...) const
   {
     va_list vlList;
@@ -149,6 +154,16 @@ namespace Utils
     free(msg);
   }
 
+  void Logger::writeMessage(FILE* fp, const std::string& prefix, LPCTSTR message, va_list list)
+  {
+#ifdef UNICODE
+    std::string str = Utils::Convert::wstringToString(message);
+#else
+    std::string str = message;
+#endif  /* UNICODE */
+    Logger::writeMessage(fp, prefix, str, list);
+  }
+
   void Logger::write(FILE* fp, const char* message, ...)
   {
     va_list vlList;
@@ -161,12 +176,18 @@ namespace Utils
   {
     FILE* f = fp ? fp : stderr;
     vfprintf(f, message, list);
+    fflush(f);
   }
   
   Logger& Logger::getLogger(LoggerId id)
   {
     Logger::map_.emplace(id, Logger());
     return Logger::map_.find(id)->second;
+  }
+
+  bool Logger::exists(LoggerId id) 
+  {
+    return Logger::map_.find(id) != std::end(Logger::map_);
   }
 }
 

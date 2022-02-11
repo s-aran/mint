@@ -19,6 +19,8 @@ namespace Utils
     void error(const std::string message, ...) const;
     void fatal(const std::string message, ...) const;
 
+    void info(LPCTSTR message, ...) const;
+
     void writeRaw(const std::string message, ...) const;
     void writeHex(const void* data, size_t size, bool showAscii = false) const;
 
@@ -36,11 +38,13 @@ namespace Utils
 
     static void writeMessage(FILE* fp, const std::string& prefix, const std::string message, ...);
     static void writeMessage(FILE* fp, const std::string& prefix, const std::string& message, va_list list);
+    static void writeMessage(FILE* fp, const std::string& prefix, LPCTSTR message, va_list list);
     static void write(FILE* fp, const char* message, ...);
     static void write(FILE* fp, const char* message, va_list list);
     
   public:
     static Logger& getLogger(LoggerId id);
+    static bool exists(LoggerId id) ;
     static FILE* getFile(const std::string& filePath);
   };
 }
