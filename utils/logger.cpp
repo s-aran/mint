@@ -1,5 +1,7 @@
+#include <cstdio>
 #include <cstdlib>
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 #include "logger.h"
 #include "pch.h"
@@ -16,7 +18,98 @@ namespace Utils
 
   Logger::Logger(): filePointer_(NULL)
   {
-    // NOP
+    /*
+    using namespace boost::log;
+
+    sources::severity_logger<Logger::Level> source;
+
+    using sink_t = sinks::asynchronous_sink<sinks::text_ostream_backend>;
+    boost::shared_ptr<sink_t> sink = boost::make_shared<sink_t>();
+    boost::shared_ptr<std::ostream> stream(&std::clog, boost::null_deleter{});
+    sink->locked_backend()->add_stream(stream);
+    // sink->set_filter(boost::log::expressions::is_in_range(severity, Logger::Level::Info, Logger::Level::Fatal));
+    sink->set_formatter(expressions::stream << "[" << expressions::format_date_time(timestamp, "%Y/%m/%d %H:%M:%S.%f") << "]" << "[" << severity << "]" << expressions::smessage);
+    core::get()->add_sink(sink);
+   
+    sources::severity_logger<Logger::Level> logger;
+    BOOST_LOG_SEV(logger, Logger::Level::Trace) << "Trace";
+    BOOST_LOG_SEV(logger, Logger::Level::Info) << "Info";
+    BOOST_LOG_SEV(logger, Logger::Level::Warn) << "Warn";
+    BOOST_LOG_SEV(logger, Logger::Level::Fatal) << "Fatal";
+    {
+      BOOST_LOG_SCOPED_LOGGER_ATTR(logger, "Timestamp", attributes::local_clock{})
+        BOOST_LOG_SEV(logger, Logger::Level::Error) << "Error";
+    }
+
+    sink->flush();
+
+    // boost::log::keywords::format = "[%TimeStamp%][%Tag%][%Scope%]: %Message%";
+    */
+    this->initializeLogger();
+  }
+
+  std::string Logger::getLogLevelStringFrom(Logger::Level level)
+  {
+    switch (level)
+    {
+    case Level::Trace:
+      return "Trace";
+    case Level::Info:
+      return "Info";
+    case Level::Warn:
+      return "Warn";
+    case Level::Error:
+      return "Error";
+    case Level::Fatal:
+      return "Fatal";
+    default:
+      return "Unknown";
+    }
+  }
+
+
+  void Logger::initializeLogger() const
+  {
+    using namespace boost::log;
+    using min_severity_filter = expressions::channel_severity_filter_actor<std::string, Logger::Level>;
+
+    // min_severity_filter min_severity = boost::log::expressions::channel_severity_filter(channel, severity);
+    // min_severity["general"] = Logger::Level::Error;
+
+    auto log = add_console_log(
+      std::clog
+      // keywords::filter = min_severity || severity >= Logger::Level::Fatal,
+      // keywords::format = "%Tag%[%Timestamp%] %Message%"
+    );
+    
+    log.get()->set_formatter(expressions::stream
+        << "["
+      << expressions::format_date_time(timestamp, "%Y/%m/%d %H:%M:%S.%f")
+      << "]"
+      << severity.get_name()
+      << expressions::smessage
+    );
+
+    log.get()->set_filter(severity >= Logger::Level::Trace);
+  }
+
+  Logger::logger_type Logger::createLogger() const
+  {
+    this->initializeLogger();
+    boost::log::add_common_attributes();
+
+    logger_type logger;
+    return logger;
+  }
+
+  void Logger::setInternalLogger(Logger::logger_type logger)
+  {
+    this->internalLogger_ = logger;
+  }
+
+  Logger::logger_type& Logger::getInternalLogger()
+  {
+    return this->internalLogger_;
   }
 
   void Logger::setFilePointer(FILE* fp)
@@ -29,6 +122,7 @@ namespace Utils
     return this->filePointer_;
   }
 
+#if 0
   void Logger::trace(const std::string message, ...) const
   {
     VARIABLEARGS_LOGGER("TRACE");
@@ -57,6 +151,82 @@ namespace Utils
   void Logger::info(LPCTSTR message, ...) const
   {
     VARIABLEARGS_LOGGER("INFO");
+  }
+#endif
+
+  void Logger::traceString(std::string message) 
+  {
+    // BOOST_LOG_TRIVIAL(trace) << message;
+    auto& logger = this->getInternalLogger();
+    BOOST_LOG_SCOPED_LOGGER_ATTR(logger, "Timestamp", boost::log::attributes::local_clock{})
+    BOOST_LOG_CHANNEL_SEV(logger, "general", Logger::Level::Trace) << message;
+  }
+
+  void Logger::debugString(std::string message) 
+  {
+    BOOST_LOG_TRIVIAL(debug) << message;
+  }
+
+  void Logger::infoString(std::string message) 
+  {
+    // BOOST_LOG_TRIVIAL(info) << message;
+    auto& logger = this->getInternalLogger();
+    BOOST_LOG_SCOPED_LOGGER_ATTR(logger, "Timestamp", boost::log::attributes::local_clock{})
+    BOOST_LOG_CHANNEL_SEV(logger, "general", Logger::Level::Info) << message;
+  }
+
+  void Logger::warnString(std::string message) 
+  {
+    // BOOST_LOG_TRIVIAL(warning) << message;
+    auto& logger = this->getInternalLogger();
+    BOOST_LOG_SCOPED_LOGGER_ATTR(logger, "Timestamp", boost::log::attributes::local_clock{})
+    BOOST_LOG_CHANNEL_SEV(logger, "general", Logger::Level::Warn) << message;
+  }
+
+  void Logger::errorString(std::string message) 
+  {
+    // BOOST_LOG_TRIVIAL(error) << message;
+    auto& logger = this->getInternalLogger();
+    BOOST_LOG_SCOPED_LOGGER_ATTR(logger, "Timestamp", boost::log::attributes::local_clock{})
+    BOOST_LOG_CHANNEL_SEV(logger, "general", Logger::Level::Error) << message;
+  }
+
+  void Logger::fatalString(std::string message) 
+  {
+    // BOOST_LOG_TRIVIAL(fatal) << message;
+    auto& logger = this->getInternalLogger();
+    BOOST_LOG_SCOPED_LOGGER_ATTR(logger, "Timestamp", boost::log::attributes::local_clock{})
+    BOOST_LOG_CHANNEL_SEV(logger, "general", Logger::Level::Fatal) << message;
+  }
+
+  void Logger::traceFormat(boost::format message) const
+  {
+    BOOST_LOG_TRIVIAL(trace) << message.str();
+  }
+
+  void Logger::debugFormat(boost::format message) const
+  {
+    BOOST_LOG_TRIVIAL(debug) << message.str();
+  }
+
+  void Logger::infoFormat(boost::format message) const
+  {
+    BOOST_LOG_TRIVIAL(info) << message.str();
+  }
+
+  void Logger::warnFormat(boost::format message) const
+  {
+    BOOST_LOG_TRIVIAL(warning) << message.str();
+  }
+
+  void Logger::errorFormat(boost::format message) const
+  {
+    BOOST_LOG_TRIVIAL(error) << message.str();
+  }
+
+  void Logger::fatalFormat(boost::format message) const
+  {
+    BOOST_LOG_TRIVIAL(fatal) << message.str();
   }
 
   void Logger::writeRaw(const std::string message, ...) const
@@ -178,7 +348,7 @@ namespace Utils
     vfprintf(f, message, list);
     fflush(f);
   }
-  
+    
   Logger& Logger::getLogger(LoggerId id)
   {
     Logger::map_.emplace(id, Logger());
