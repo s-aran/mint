@@ -22,6 +22,64 @@ namespace Ui
 
   HWND ParentWindow::create(HINSTANCE hInstance)
   {
+    HWND hWnd = this->createWindow(hInstance, nullptr, nullptr);
+    if (!hWnd)
+    {
+      Window::getLogger().warn("[%s] %s: %s\n", "ParentWindow", "CreateWindowEx()", Utils::Convert::lpctstrToString(Utils::Windows::getErrorMessage()).c_str());
+      return NULL;
+    }
+    Window::getLogger().info("[%s] %s: %s\n", "ParentWindow", "CreateWindowEx()", "Succeeded.");
+
+    this->postCreateWindow(hWnd);
+
+    return hWnd;
+  }
+
+  HWND ParentWindow::getClientWindowHandle() const
+  {
+    return this->hClientWindow_;
+  }
+
+  void ParentWindow::setClientWindowHandle(HWND hWnd)
+  {
+    this->hClientWindow_ = hWnd;
+  }
+
+  HWND ParentWindow::createClientWindow()
+  {
+    CLIENTCREATESTRUCT ccsClient{ .hWindowMenu = NULL, .idFirstChild = 1000 };
+
+    RECT rect = this->getClientRect();
+    HWND hClient = CreateWindow(TEXT("MDICLIENT"), NULL,
+      WS_CHILD | WS_CLIPCHILDREN | WS_VSCROLL | WS_HSCROLL | WS_BORDER | WS_VISIBLE, 
+      0, 0, rect.right, rect.bottom, this->getHandle(), (HMENU)1, GetModuleHandle(0), &ccsClient);
+    if (!hClient)
+    {
+      Window::getLogger().warn("[%s] %s: %s\n", "ParentWindow", "CreateWindowEx()", Utils::Convert::lpctstrToString(Utils::Windows::getErrorMessage()).c_str());
+      return NULL;
+    }
+    this->setClientWindowHandle(hClient);
+    return hClient;
+  }
+
+  void ParentWindow::registerCreateCallback()
+  {
+    /*
+    this->messageCallback_.add(WM_CREATE, [&](HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+    {
+      this->setClientWindowHandle(this->createClientWindow());
+      return 0;
+    });
+    */
+    this->messageCallback_.add(WM_DESTROY, [&](HWND, UINT, WPARAM, LPARAM)
+    {
+      PostQuitMessage(0);
+      return 0;
+    });
+  }
+
+  HWND ParentWindow::createWindow(HINSTANCE hInstance, WNDPROC lpfnWndProc, LPVOID lpData)
+  {
     // using namespace std::placeholders;
 
     this->windowClassEx_.setInstance(hInstance);
@@ -50,50 +108,7 @@ namespace Ui
       NULL
     );
 
-    if (!hWnd)
-    {
-      std::wcout << std::wstring(getErrorMessage()) << std::endl;
-      // this->m_lpError->SetWindowsError();
-
-      // g_lpDebug->Error("CreateWindowEx() is Failure. return = 0x%08X, ErrorCode=0x%08X", hWnd, GetLastError());
-      // g_lpDebug->Error(this->m_lpError->GetWindowsErrorMessage());
-
-      std::wcout << std::wstring(getErrorMessage()) << std::endl;
-
-      return NULL;
-    }
-
-    this->m_hWnd = hWnd;
-    // this->setClientSize(480, 320);
-
-    this->setUserData();
-
     return hWnd;
-  }
-
-  HWND ParentWindow::getClientWindowHandle() const
-  {
-    return this->hClientWindow_;
-  }
-
-  void ParentWindow::setClientWindowHandle(HWND hWnd)
-  {
-    this->hClientWindow_ = hWnd;
-  }
-
-  HWND ParentWindow::createClientWindow()
-  {
-    CLIENTCREATESTRUCT ccsClient{ .hWindowMenu = NULL, .idFirstChild = 1000 };
-    return CreateWindow(TEXT("MDICLIENT"), NULL, WS_CHILD | WS_CLIPCHILDREN | WS_VISIBLE, 0, 0, 0, 0, Window::getUserData(this->getHandle())->getHandle(), (HMENU)1, GetModuleHandle(0), &ccsClient);
-  }
-
-  void ParentWindow::registerCreateCallback()
-  {
-    this->messageCallback_.add(WM_CREATE, [&](HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-    {
-      this->setClientWindowHandle(this->createClientWindow());
-      return 0;
-    });
   }
 
   LRESULT CALLBACK ParentWindow::MessageCallback::Procedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)

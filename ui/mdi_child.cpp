@@ -22,13 +22,23 @@ namespace Ui
 
   HWND ChildWindow::create(HINSTANCE hInstance, WNDPROC lpfnWndProc, HWND hMdiClient)
   {
+    this->hMdiClient = hMdiClient;
+      
+    HWND hWnd = this->createWindow(hInstance, lpfnWndProc, nullptr);
+
+    this->postCreateWindow(hWnd);
+
+    return hWnd;
+  }
+  HWND ChildWindow::createWindow(HINSTANCE hInstance, WNDPROC lpfnWndProc, LPVOID lpData)
+  {
     this->windowClassEx_.setInstance(hInstance);
     this->windowClassEx_.setWindowProcedure(lpfnWndProc);
     this->registerWindowClassEx(this->windowClassEx_);
 
     HWND hWnd = CreateMDIWindow(
       this->m_lpszClassName,
-      TEXT(""),
+      TEXT("Piyo"),
       0,
       this->getX(),
       this->getY(),
@@ -38,11 +48,10 @@ namespace Ui
       hInstance,
       0
     );
-    this->m_hWnd = hWnd;
 
     if (!hWnd)
     {
-      std::wcout << std::wstring(getErrorMessage()) << std::endl;
+      Window::getLogger().warn("[%s] %s: %s\n", "ChildWindow", "CreateMDIWindow()", Utils::Convert::lpctstrToString(Utils::Windows::getErrorMessage()).c_str());
     }
 
     return hWnd;

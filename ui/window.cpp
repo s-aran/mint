@@ -47,46 +47,20 @@ namespace Ui
 
   HWND Window::create(HINSTANCE hInstance, WNDPROC lpfnWndProc, LPVOID lpData)
   {
-    this->windowClassEx_.setInstance(hInstance);
-    this->windowClassEx_.setWindowProcedure(lpfnWndProc);
-    this->registerWindowClassEx(this->windowClassEx_);
-
-    //this->m_lpWindowClassEx->GetWindowProcedure()(NULL, 0, NULL, NULL);
-
-    HWND hWnd = CreateWindowEx(
-      0,
-      this->m_lpszClassName,
-      TEXT(""),
-      // Caption bar with close button
-      // WS_CAPTION | WS_SYSMENU,
-      WS_OVERLAPPEDWINDOW,
-      this->getX(),
-      this->getY(),
-      this->getWidth(),
-      this->getHeight(),
-      NULL,
-      NULL,
-      hInstance,
-      (lpData) ? (LPVOID)this->createCreateStruct(lpData) : NULL
-    );
+    HWND hWnd = this->createWindow(hInstance, lpfnWndProc, lpData);
 
     if (!hWnd)
     {
-      std::wcout << std::wstring(getErrorMessage()) << std::endl;
+      std::wcout << std::wstring(Utils::Windows::getErrorMessage()) << std::endl;
       // this->m_lpError->SetWindowsError();
 
       // g_lpDebug->Error("CreateWindowEx() is Failure. return = 0x%08X, ErrorCode=0x%08X", hWnd, GetLastError());
       // g_lpDebug->Error(this->m_lpError->GetWindowsErrorMessage());
 
-      std::wcout << std::wstring(getErrorMessage()) << std::endl;
+      std::wcout << std::wstring(Utils::Windows::getErrorMessage()) << std::endl;
 
       return NULL;
     }
-
-    this->m_hWnd = hWnd;
-    // this->setClientSize(480, 320);
-
-    this->setUserData();
 
     return hWnd;
   }
@@ -118,7 +92,7 @@ namespace Ui
   {
     if (!RegisterClassEx(classEx.getWindowClassEx()))
     {
-      std::wcout << std::wstring(getErrorMessage()) << std::endl;
+      Window::getLogger().warn("[%s] %s: %s\n", "Window", "RegisterClassEx()", Utils::Convert::lpctstrToString(Utils::Windows::getErrorMessage()).c_str());
     }
 
     // this->m_lpError->SetSelfError(RegisterClassEx(lpClassEx->GetWindowClassEx()));
@@ -369,6 +343,13 @@ namespace Ui
     return this->m_lpData;
   }
 
+  RECT Window::getClientRect() const
+  {
+    RECT r = { 0 };
+    GetClientRect(this->m_hWnd, &r);
+    return r;
+  }
+
   /*
   CrunError* Window::GetError()
   {
@@ -399,6 +380,55 @@ namespace Ui
     return lpWindow;
   }
 
+  HWND Window::createWindow(HINSTANCE hInstance, WNDPROC lpfnWndProc, LPVOID lpData)
+  {
+    this->windowClassEx_.setInstance(hInstance);
+    this->windowClassEx_.setWindowProcedure(lpfnWndProc);
+    this->registerWindowClassEx(this->windowClassEx_);
+
+    //this->m_lpWindowClassEx->GetWindowProcedure()(NULL, 0, NULL, NULL);
+
+    HWND hWnd = CreateWindowEx(
+      0,
+      this->m_lpszClassName,
+      TEXT(""),
+      // Caption bar with close button
+      // WS_CAPTION | WS_SYSMENU,
+      WS_OVERLAPPEDWINDOW,
+      this->getX(),
+      this->getY(),
+      this->getWidth(),
+      this->getHeight(),
+      NULL,
+      NULL,
+      hInstance,
+      (lpData) ? (LPVOID)this->createCreateStruct(lpData) : NULL
+    );
+
+    return hWnd;
+  }
+
+  void Window::postCreateWindow(HWND hWnd)
+  {
+    this->m_hWnd = hWnd;
+    // this->setClientSize(480, 320);
+
+    this->setUserData();
+
+    PostMessage(hWnd, Window::WM_CREATED, 0, 0);
+    DWORD error = GetLastError();
+    if (error != NO_ERROR)
+    {
+      auto errorMessage = Utils::Convert::lpctstrToString(Utils::Windows::getErrorMessage(error));
+      this->getLogger().warn("PostMessage(): %s\n", errorMessage);
+    }
+  }
+
+  Utils::Logger& Window::getLogger()
+  {
+    return Utils::Logger::getLogger(10);
+  }
+
   LRESULT CALLBACK Window::MessageCallback::Procedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
   {
     const auto itr = this->getMap().find(uMsg);
@@ -411,6 +441,7 @@ namespace Ui
 
     return DefWindowProc(hWnd, uMsg, wParam, lParam);
   }
+
   LRESULT CALLBACK Window::MessageCallback::WindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
   {
     Window* window = Window::getUserData(hWnd);
@@ -420,5 +451,20 @@ namespace Ui
     }
 
     return DefWindowProc(hWnd, uMsg, wParam, lParam);
+  }
+
+  void Window::addCallback(UINT uMsg, Window::Callback cb)
+  {
+    this->messageCallback_.add(uMsg, cb);
+  }
+
+  void Window::removeCallback(UINT uMsg)
+  {
+    this->messageCallback_.remove(uMsg);
+  }
+
+  bool Window::hasCallback(UINT uMsg) const
+  {
+    return this->messageCallback_.has(uMsg);
   }
 }

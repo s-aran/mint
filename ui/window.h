@@ -15,6 +15,8 @@ namespace Ui
       static LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
     };
 
+    static constexpr DWORD WM_CREATED = WM_APP + 1;
+
   public:
     Window(LPCTSTR lpszClassName);
     Window(LPCTSTR lpszClassName, WindowClassEx& windowClassEx);
@@ -60,16 +62,26 @@ namespace Ui
 
     static HINSTANCE getInstance(HWND hWnd);
 
+    void addCallback(UINT uMsg, Callback cb);
+    void removeCallback(UINT uMsg);
+    bool hasCallback(UINT uMsg) const;
+
+    RECT getClientRect() const;
+
   protected:
     typedef std::vector<HWND> DialogWindowHandlerVector;
 
     static DialogWindowHandlerVector g_vectorDialogWindows;
+
+    static Utils::Logger& getLogger();
 
     WindowClassEx createWindowClassEx();
     void registerWindowClassEx(WindowClassEx& classEx);
     // void setHandle(HWND hWnd);
     LPCREATESTRUCT createCreateStruct(LPVOID lpCreateParam);
     void deleteCreateStruct();
+
+    void postCreateWindow(HWND hWnd);
 
     BOOL setClientSize(int nClientWidth, int nClientHeight);
 
@@ -99,6 +111,7 @@ namespace Ui
     void* m_lpData;
 
   private:
+    HWND createWindow(HINSTANCE hInstance, WNDPROC lpfnWndProc, LPVOID lpData);
   };
 
 }

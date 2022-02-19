@@ -19,13 +19,15 @@ namespace Ui
     HWND create();
     HWND create(HINSTANCE hInstance);
 
+    HWND createClientWindow();
     HWND getClientWindowHandle() const;
 
   private:
     HWND hClientWindow_;
 
     void setClientWindowHandle(HWND hWnd);
-    HWND createClientWindow();
     void registerCreateCallback();
+
+    virtual HWND createWindow(HINSTANCE hInstance, WNDPROC lpfnWndProc, LPVOID lpData);
   };
 }

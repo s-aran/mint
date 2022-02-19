@@ -12,5 +12,10 @@ namespace Ui
 
     HWND create(HWND hMdiClient, WNDPROC lpfnWndProc);
     HWND create(HINSTANCE hInstance, WNDPROC lpfnWndProc, HWND hMdiClient);
+
+  private:
+    HWND hMdiClient;
+
+    HWND createWindow(HINSTANCE hInstance, WNDPROC lpfnWndProc, LPVOID lpData);
   };
 }

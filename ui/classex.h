@@ -13,7 +13,7 @@ namespace Ui
     ~WindowClassEx();
 
     WindowClassEx& operator=(const WindowClassEx& rhs);
-    WindowClassEx& operator=(WindowClassEx&& rhs);
+    WindowClassEx& operator=(WindowClassEx&& rhs) noexcept;
 
     LPWNDCLASSEX getWindowClassEx() const;
 

@@ -46,13 +46,15 @@ int main()
   setlocale(LC_CTYPE, "");
   std::cout << "Hello World!\n";
 
+  Utils::Logger logger = Utils::Logger::getLogger(0);
+
   WindowClassEx windowClass;
   windowClass.setBackground((HBRUSH)(COLOR_APPWORKSPACE + 1));
 
   /*
   mainWindow = new Window(TEXT("AAAA"), windowClass);
   */
-  mainWindow = new ParentWindow(TEXT("AAAA"), windowClass);
+  mainWindow = new ParentWindow(TEXT("FRAMEWINDOW"), windowClass);
   
 
   WindowClassEx childClass = windowClass;
@@ -60,7 +62,37 @@ int main()
   cw = new ChildWindow(TEXT("MDICHILD"), childClass);
 
 
+  mainWindow->addCallback(Window::WM_CREATED, [&](HWND hWnd, UINT, WPARAM, LPARAM)
+  {
+    mainWindow->createClientWindow();
+
+    HWND hChild = cw->create(mainWindow->getClientWindowHandle(), DefMDIChildProc);
+    if (hChild == NULL && GetLastError() != NO_ERROR)
+    {
+      auto errorMessage = Utils::Convert::lpctstrToString(Utils::Windows::getErrorMessage());
+      logger.info(errorMessage);
+    }
+
+      /*
+    HDC hDC;
+    PAINTSTRUCT ps;
+    CLIENTCREATESTRUCT ccsClient;
+
+    ccsClient.hWindowMenu = NULL;
+    ccsClient.idFirstChild = 1000;
+
+    HWND hClient = CreateWindow(TEXT("MDICLIENT"), NULL, WS_CHILD | WS_CLIPCHILDREN | WS_VISIBLE, 0, 0, 480, 320, hWnd, (HMENU)1, GetModuleHandle(0), &ccsClient);
+    if (!hClient)
+    {
+      std::cout << Utils::Windows::getErrorMessage() << std::endl;
+    }
+  */
+
+    return 0;
+  });
+
   mainWindow->create();
+
   mainWindow->show();
 
   mainWindow->MainLoop();

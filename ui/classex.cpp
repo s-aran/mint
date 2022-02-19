@@ -53,7 +53,7 @@ namespace Ui
     return *this;
   }
 
-  WindowClassEx& WindowClassEx::operator=(WindowClassEx&& rhs)
+  WindowClassEx& WindowClassEx::operator=(WindowClassEx&& rhs) noexcept
   {
     this->destroyWindowClassEx(this->m_lpwcxWindowClassEx);
     this->m_lpwcxWindowClassEx = (LPWNDCLASSEX)malloc(sizeof(*rhs.getWindowClassEx()));
