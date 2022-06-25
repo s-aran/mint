@@ -10,34 +10,6 @@
 Ui::ParentWindow* mainWindow = NULL;
 Ui::ChildWindow* cw = NULL;
 
-LRESULT CALLBACK FrameWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-  HDC hDC;
-  PAINTSTRUCT ps;
-  CLIENTCREATESTRUCT ccsClient;
-
-  static HWND hClientWindow;
-
-  switch (uMsg)
-  {
-  case WM_DESTROY:
-    PostQuitMessage(0);
-    return 0;
-  case WM_CREATE:
-    // fnui();
-
-    ccsClient.hWindowMenu = NULL;
-    ccsClient.idFirstChild = 1000;
-    hClientWindow = CreateWindow(TEXT("MDICLIENT"), NULL, WS_CHILD | WS_CLIPCHILDREN | WS_VISIBLE, 0, 0, 0, 0, hWnd, (HMENU)1, GetModuleHandle(0), &ccsClient);
-
-    // CreateMDIWindow(TEXT("MDICHILD"), TEXT("Piyo"), 0, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, hClientWindow, hInstance, 0);
-    HWND hChild = cw->create(hClientWindow, DefMDIChildProc);
-    cw->setSize(320, 240);
-    return 0;
-  }
-
-  return DefFrameProc(hWnd, hClientWindow, uMsg, wParam, lParam);
-}
 
 int main()
 {
@@ -61,32 +33,31 @@ int main()
   childClass.setBackground((HBRUSH)GetStockObject(WHITE_BRUSH));
   cw = new ChildWindow(TEXT("MDICHILD"), childClass);
 
+  cw->addCallback(WM_MOUSEMOVE, [&](HWND hWnd, UINT, WPARAM wParam, LPARAM lParam)
+  {
+    int x = LOWORD(lParam);
+    int y = HIWORD(lParam);
+    logger.info("(%d, %d)\n", x, y);
+
+    return 0;
+  });
 
   mainWindow->addCallback(Window::WM_CREATED, [&](HWND hWnd, UINT, WPARAM, LPARAM)
   {
     mainWindow->createClientWindow();
 
-    HWND hChild = cw->create(mainWindow->getClientWindowHandle(), DefMDIChildProc);
+    HWND hChild = cw->create(mainWindow->getClientWindowHandle());
     if (hChild == NULL && GetLastError() != NO_ERROR)
     {
       auto errorMessage = Utils::Convert::lpctstrToString(Utils::Windows::getErrorMessage());
       logger.info(errorMessage);
     }
 
-      /*
-    HDC hDC;
-    PAINTSTRUCT ps;
-    CLIENTCREATESTRUCT ccsClient;
-
-    ccsClient.hWindowMenu = NULL;
-    ccsClient.idFirstChild = 1000;
-
-    HWND hClient = CreateWindow(TEXT("MDICLIENT"), NULL, WS_CHILD | WS_CLIPCHILDREN | WS_VISIBLE, 0, 0, 480, 320, hWnd, (HMENU)1, GetModuleHandle(0), &ccsClient);
-    if (!hClient)
-    {
-      std::cout << Utils::Windows::getErrorMessage() << std::endl;
-    }
-  */
+    cw->addCallback(WM_CLOSE, [&](HWND hWnd, UINT, WPARAM, LPARAM)
+ {
+   printf("closed\n");
+   return DestroyWindow(hWnd);
+      });
 
     return 0;
   });

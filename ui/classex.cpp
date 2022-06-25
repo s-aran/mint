@@ -11,7 +11,7 @@ namespace Ui
     // this->m_lpError = new CrunError();
     this->m_lpwcxWindowClassEx = this->createWindowClassEx();
 
-    // default values`
+    // default values
     this->setStyle(CS_HREDRAW | CS_VREDRAW);
     this->setWindowProcedure(NULL);
     this->setClassExtra(0);

@@ -14,6 +14,11 @@ namespace Ui
     // NOP
   }
 
+  HWND ChildWindow::create(HWND hMdiClient)
+  {
+    return this->create(hMdiClient, this->messageCallback_.WindowProcedure);
+  }
+
   HWND ChildWindow::create(HWND hMdiClient, WNDPROC lpfnWndProc)
   {
     HINSTANCE hInstance = GetModuleHandle(0);
@@ -30,6 +35,7 @@ namespace Ui
 
     return hWnd;
   }
+  
   HWND ChildWindow::createWindow(HINSTANCE hInstance, WNDPROC lpfnWndProc, LPVOID lpData)
   {
     this->windowClassEx_.setInstance(hInstance);
@@ -55,5 +61,18 @@ namespace Ui
     }
 
     return hWnd;
+  }
+
+  LRESULT CALLBACK ChildWindow::MessageCallback::Procedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+  {
+    const auto itr = this->getMap().find(uMsg);
+
+    if (itr != this->getMap().cend())
+    {
+      itr->second(hWnd, uMsg, wParam, lParam);
+      return 0;
+    }
+
+    return DefMDIChildProc(hWnd, uMsg, wParam, lParam);
   }
 }

@@ -76,13 +76,18 @@ namespace Utils
     // min_severity_filter min_severity = boost::log::expressions::channel_severity_filter(channel, severity);
     // min_severity["general"] = Logger::Level::Error;
 
-    auto log = add_console_log(
-      std::clog
+    formatter fmt(expressions::format("%1% %2%") % expressions::format_date_time<boost::posix_time::ptime>("TimeStamp", "%Y/%m/%d %H:%M:%S.%f") % expressions::smessage);
+    boost::log::sinks::text_ostream_backend sink(std::clog, keywords::format = fmt);
+
+    // sources::basic_severity_logger log<Logger::Level>(Logger::Level::Trace);
+    //add_console_log(
+     // std::clog
       // keywords::filter = min_severity || severity >= Logger::Level::Fatal,
       // keywords::format = "%Tag%[%Timestamp%] %Message%"
-    );
-    
-    log.get()->set_formatter(expressions::stream
+   // );
+
+    /*
+    log.set_formatter(expressions::stream
         << "["
       << expressions::format_date_time(timestamp, "%Y/%m/%d %H:%M:%S.%f")
       << "]"
@@ -91,6 +96,7 @@ namespace Utils
     );
 
     log.get()->set_filter(severity >= Logger::Level::Trace);
+    */
   }
 
   Logger::logger_type Logger::createLogger() const
@@ -172,7 +178,7 @@ namespace Utils
     // BOOST_LOG_TRIVIAL(info) << message;
     auto& logger = this->getInternalLogger();
     BOOST_LOG_SCOPED_LOGGER_ATTR(logger, "Timestamp", boost::log::attributes::local_clock{})
-    BOOST_LOG_CHANNEL_SEV(logger, "general", Logger::Level::Info) << message;
+    BOOST_LOG_CHANNEL_SEV(logger, "general2", Logger::Level::Info) << message;
   }
 
   void Logger::warnString(std::string message) 
@@ -180,7 +186,8 @@ namespace Utils
     // BOOST_LOG_TRIVIAL(warning) << message;
     auto& logger = this->getInternalLogger();
     BOOST_LOG_SCOPED_LOGGER_ATTR(logger, "Timestamp", boost::log::attributes::local_clock{})
-    BOOST_LOG_CHANNEL_SEV(logger, "general", Logger::Level::Warn) << message;
+    // BOOST_LOG_CHANNEL_SEV(logger, "general", Logger::Level::Warn) << message;
+    
   }
 
   void Logger::errorString(std::string message) 
