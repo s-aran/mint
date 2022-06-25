@@ -46,6 +46,43 @@ int main()
   {
     mainWindow->createClientWindow();
 
+    HMENU hMenu = CreateMenu();
+    HMENU hSub1 = CreatePopupMenu();
+    HMENU hSub2 = CreatePopupMenu();
+
+    MENUITEMINFO menuInfo;
+
+    ZeroMemory(&menuInfo, sizeof(menuInfo));
+    menuInfo.cbSize = sizeof(menuInfo);
+    menuInfo.fMask = MIIM_TYPE | MIIM_SUBMENU;
+    menuInfo.fType = MFT_STRING;
+    menuInfo.fState = MFS_ENABLED;
+
+    menuInfo.wID = 0;
+    menuInfo.hSubMenu = hSub1;
+    menuInfo.dwTypeData = (LPWSTR)TEXT("A");
+    InsertMenuItem(hMenu, 0, TRUE, &menuInfo);
+
+    menuInfo.wID = 1;
+    menuInfo.hSubMenu = hSub2;
+    menuInfo.dwTypeData = (LPWSTR)TEXT("B");
+    InsertMenuItem(hMenu, 1, TRUE, &menuInfo);
+
+    menuInfo.fMask = MIIM_TYPE | MIIM_ID;
+    // menuInfo.fType = MFT_STRING;
+
+    menuInfo.wID = 0x1001;
+    menuInfo.dwTypeData = (LPWSTR)TEXT("Exit");
+    InsertMenuItem(hSub1, 0, TRUE, &menuInfo);
+
+    menuInfo.wID = 0x1002;
+    menuInfo.dwTypeData = (LPWSTR)TEXT("About");
+    InsertMenuItem(hSub2, 0, TRUE, &menuInfo);
+
+    SetMenu(hWnd, hMenu);
+
+
+
     HWND hChild = cw->create(mainWindow->getClientWindowHandle());
     if (hChild == NULL && GetLastError() != NO_ERROR)
     {

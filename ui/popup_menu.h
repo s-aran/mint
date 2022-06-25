@@ -4,10 +4,10 @@
 
 namespace Ui
 {
-  class Menu : public MenuBase
+  class PopupMenu : public MenuBase
   {
   public:
-    Menu();
-    virtual ~Menu();
+    PopupMenu();
+    virtual ~PopupMenu();
   };
 }

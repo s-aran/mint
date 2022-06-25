@@ -166,7 +166,12 @@
     <ClInclude Include="mdi_child.h" />
     <ClInclude Include="mdi_parent.h" />
     <ClInclude Include="menu.h" />
+    <ClInclude Include="menu_base.h" />
+    <ClInclude Include="menu_item_base.h" />
+    <ClInclude Include="menu_item_string.h" />
+    <ClInclude Include="menu_item_separator.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="popup_menu.h" />
     <ClInclude Include="window.h" />
   </ItemGroup>
   <ItemGroup>
@@ -174,12 +179,18 @@
     <ClCompile Include="classex.cpp" />
     <ClCompile Include="mdi_child.cpp" />
     <ClCompile Include="mdi_parent.cpp" />
+    <ClCompile Include="menu.cpp" />
+    <ClCompile Include="menu_base.cpp" />
+    <ClCompile Include="menu_item_base.cpp" />
+    <ClCompile Include="menu_item_separator.cpp" />
+    <ClCompile Include="menu_item_string.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="popup_menu.cpp" />
     <ClCompile Include="ui.cpp" />
     <ClCompile Include="window.cpp" />
   </ItemGroup>

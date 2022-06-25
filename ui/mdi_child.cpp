@@ -6,7 +6,6 @@ namespace Ui
 {
   ChildWindow::ChildWindow(LPCTSTR lpszClassName) : Window(lpszClassName)
   {
-    // NOP
   }
 
   ChildWindow::ChildWindow(LPCTSTR lpszClassName, WindowClassEx& windowClassEx) : Window(lpszClassName, windowClassEx)
