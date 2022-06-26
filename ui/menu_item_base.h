@@ -20,7 +20,10 @@ namespace Ui
     void setMenuItemInfo(MENUITEMINFO&& menuItemInfo);
     LPMENUITEMINFO getMutableMenuItemInfo();
 
+
+
   private:
+    int m_id;
     MENUITEMINFO m_menuItemInfo;
   };
 }

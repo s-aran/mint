@@ -2,7 +2,7 @@
 
 namespace Ui
 {
-  MenuItemBase::MenuItemBase()
+  MenuItemBase::MenuItemBase() : m_id(0), m_menuItemInfo({ 0 })
   {
     // NOP
   }
@@ -45,4 +45,6 @@ namespace Ui
   {
     return &this->m_menuItemInfo;
   }
+
+
 }

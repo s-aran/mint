@@ -7,6 +7,7 @@ namespace Ui
   class MenuItemString : public MenuItemBase
   {
   public:
+    MenuItemString(LPCTSTR lpszLabel);
     MenuItemString(LPCTSTR&& lpszLabel);
     virtual ~MenuItemString();
   };

@@ -46,6 +46,7 @@ int main()
   {
     mainWindow->createClientWindow();
 
+    /*
     HMENU hMenu = CreateMenu();
     HMENU hSub1 = CreatePopupMenu();
     HMENU hSub2 = CreatePopupMenu();
@@ -78,8 +79,15 @@ int main()
     menuInfo.wID = 0x1002;
     menuInfo.dwTypeData = (LPWSTR)TEXT("About");
     InsertMenuItem(hSub2, 0, TRUE, &menuInfo);
+    */
 
-    SetMenu(hWnd, hMenu);
+    Menu menu;
+    auto str1 = L"AAA";
+    auto str2 = L"BBB";
+    int item1 = menu.addItem(std::move(MenuItemString(str1)));
+    menu.insertItem(item1, std::move(MenuItemString(str2)));
+    menu.build();
+    SetMenu(hWnd, menu.getHandle());
 
 
 

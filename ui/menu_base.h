@@ -10,9 +10,12 @@ namespace Ui
     MenuBase();
     virtual ~MenuBase();
 
+    bool build();
+
     HMENU getHandle() const;
 
     int addItem(MenuItemBase&& item);
+    int insertItem(int id, MenuItemBase&& item);
     void deleteItem(int id);
     bool hasItem(int id) const;
 
@@ -26,6 +29,10 @@ namespace Ui
     HMENU m_hMenu;
     
     int m_currentItemId;
-    std::map<int, std::unique_ptr<MenuItemBase>> m_items;
+    std::vector<std::shared_ptr<MenuItemBase>> m_items;
+    std::map<int, std::shared_ptr<MenuItemBase>> m_itemIndex;
+
+    const std::shared_ptr<MenuItemBase>& getItemSharedPtrBy(int id) const;
+    int getItemIdBy(const std::shared_ptr<MenuItemBase>& itemSharedPtr);
   };
 }
