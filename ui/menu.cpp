@@ -9,6 +9,6 @@ namespace Ui
 
   Menu::~Menu()
   {
-    // NOP
+    DestroyMenu(this->getHandle());
   }
 }

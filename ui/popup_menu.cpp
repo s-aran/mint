@@ -9,6 +9,6 @@ namespace Ui
 
   PopupMenu::~PopupMenu()
   {
-    // NOP
+    DestroyMenu(this->getHandle());
   }
 }
